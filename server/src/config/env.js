@@ -12,12 +12,12 @@ dotenv.config({ path: serverEnvPath });
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  PORT: z.coerce.number().default(5000),
+  PORT: z.coerce.number().default(5050),
   MONGODB_URI: z.string().default('mongodb://127.0.0.1:27017/helpdesk_hub'),
   JWT_SECRET: z.string().min(16, 'JWT_SECRET must be at least 16 characters long'),
   JWT_EXPIRES_IN: z.string().default('8h'),
   COOKIE_SECRET: z.string().min(16, 'COOKIE_SECRET must be at least 16 characters long'),
-  CLIENT_ORIGIN: z.string().default('http://localhost:5173'),
+  CLIENT_ORIGIN: z.string().default('http://localhost:3000'),
   UPLOAD_DIR: z.string().default('./uploads'),
   SLA_POLLER_INTERVAL_MS: z.coerce.number().default(60000)
 });

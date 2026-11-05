@@ -234,13 +234,13 @@ cd ..
 ### Step 5: Start Development Servers
 In two separate terminal windows:
 ```bash
-# Terminal 1: Backend API & WebSocket Server (Port 5000)
+# Terminal 1: Backend API & WebSocket Server (Port 5050)
 npm run dev:server
 
-# Terminal 2: Frontend Vite React Application (Port 5173)
+# Terminal 2: Frontend Vite React Application (Port 3000)
 npm run dev:client
 ```
-Navigate your browser to `http://localhost:5173`.
+Navigate your browser to `http://localhost:3000`.
 
 ---
 
@@ -249,13 +249,13 @@ Navigate your browser to `http://localhost:5173`.
 ### Server Environment Variables (`server/.env`)
 | Variable | Default Value | Description |
 | :--- | :--- | :--- |
-| `PORT` | `5000` | HTTP and WebSocket server listening port. |
+| `PORT` | `5050` | HTTP and WebSocket server listening port. |
 | `NODE_ENV` | `development` | Environment mode (`development`, `test`, `production`). |
 | `MONGODB_URI` | `mongodb://127.0.0.1:27017/helpdesk_hub` | Connection string for MongoDB database. |
 | `JWT_SECRET` | *(64-char high-entropy string)* | Symmetric secret for signing authorization JWTs. |
 | `JWT_EXPIRES_IN`| `8h` | Lifetime of issued authentication tokens. |
 | `COOKIE_SECRET` | *(32-char high-entropy string)* | Secret used for cookie signature verification. |
-| `CLIENT_ORIGIN` | `http://localhost:5173` | Authorized CORS origin for web requests and WebSockets. |
+| `CLIENT_ORIGIN` | `http://localhost:3000` | Authorized CORS origin for web requests and WebSockets. |
 | `UPLOAD_DIR` | `./uploads` | Storage directory for diagnostic attachments. |
 
 ---

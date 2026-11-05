@@ -103,13 +103,13 @@ Open two terminal windows or run using workspace scripts:
 **Terminal 1 — Backend API Server:**
 ```bash
 npm --prefix server run dev
-# Server starts at http://localhost:5000
+# Server starts at http://localhost:5050
 ```
 
 **Terminal 2 — Frontend Client:**
 ```bash
 npm --prefix client run dev
-# Web application starts at http://localhost:5173
+# Web application starts at http://localhost:3000
 ```
 
 ---
@@ -363,7 +363,7 @@ npm --prefix server test
 
 ### Environment Variables (`server/.env`)
 ```ini
-PORT=5000
+PORT=5050
 NODE_ENV=production
 MONGODB_URI=mongodb://mongo-cluster:27017/helpdesk_hub
 JWT_SECRET=super_secret_high_entropy_key_min_32_chars
@@ -400,7 +400,7 @@ server {
 
     # REST API Gateway
     location /api/ {
-        proxy_pass http://127.0.0.1:5000;
+        proxy_pass http://127.0.0.1:5050;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -409,7 +409,7 @@ server {
 
     # Real-Time WebSocket Endpoint
     location /socket.io/ {
-        proxy_pass http://127.0.0.1:5000;
+        proxy_pass http://127.0.0.1:5050;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "Upgrade";
