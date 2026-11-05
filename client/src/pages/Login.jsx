@@ -93,7 +93,36 @@ export function Login() {
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-slate-700/60 text-center text-xs text-slate-400">
+        <div className="mt-6 pt-5 border-t border-slate-700/60">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5 text-center">
+            ⚡ Quick 1-Click Demo Accounts:
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              onClick={() => { setEmail('admin@helpdeskhub.internal'); setPassword('AdminPass123!'); }}
+              className="py-1.5 px-2 rounded-lg bg-slate-900 border border-slate-700 hover:border-blue-500 text-[11px] font-medium text-slate-300 transition-colors"
+            >
+              👑 Admin
+            </button>
+            <button
+              type="button"
+              onClick={() => { setEmail('tech@helpdeskhub.internal'); setPassword('TechPass123!'); }}
+              className="py-1.5 px-2 rounded-lg bg-slate-900 border border-slate-700 hover:border-blue-500 text-[11px] font-medium text-slate-300 transition-colors"
+            >
+              🛠️ Tech
+            </button>
+            <button
+              type="button"
+              onClick={() => { setEmail('employee@helpdeskhub.internal'); setPassword('EmployeePass123!'); }}
+              className="py-1.5 px-2 rounded-lg bg-slate-900 border border-slate-700 hover:border-blue-500 text-[11px] font-medium text-slate-300 transition-colors"
+            >
+              👤 Employee
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-4 pt-4 border-t border-slate-700/60 text-center text-xs text-slate-400">
           Need an employee account?{' '}
           <Link to="/register" className="text-blue-400 font-semibold hover:underline">
             Register here

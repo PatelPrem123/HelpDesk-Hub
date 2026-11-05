@@ -173,7 +173,154 @@ app.get('/', (req, res) => {
 
 // 6. System Health & Diagnostic Route
 app.get('/api/v1/health', (req, res) => {
-  const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+  const isConnected = mongoose.connection.readyState === 1;
+  const dbStatus = isConnected ? 'connected' : 'disconnected';
+  const uptimeSec = Math.floor(process.uptime());
+  const uptimeMin = Math.floor(uptimeSec / 60);
+  const uptimeRemainingSec = uptimeSec % 60;
+  const uptimeStr = uptimeMin > 0 ? `${uptimeMin}m ${uptimeRemainingSec}s` : `${uptimeSec}s`;
+  const timestamp = new Date().toISOString();
+
+  // If a web browser opens this URL directly, render a diagnostic dashboard
+  if (req.headers.accept?.includes('text/html') && !req.xhr) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HelpDesk Hub - System Health Diagnostics</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 36px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 16px;
+    }
+    .title { font-size: 20px; font-weight: 700; color: #fff; }
+    .badge-up {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .metric-box {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .metric-label { font-size: 11px; text-transform: uppercase; color: #94a3b8; font-weight: 600; margin-bottom: 4px; }
+    .metric-val { font-size: 16px; font-weight: 700; color: #fff; }
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .btn-primary {
+      flex: 1;
+      padding: 12px 18px;
+      border-radius: 10px;
+      background: #2563eb;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 13px;
+      text-align: center;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-secondary {
+      padding: 12px 18px;
+      border-radius: 10px;
+      background: #334155;
+      color: #cbd5e1;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 13px;
+      text-align: center;
+      transition: background 0.2s;
+    }
+    .btn-secondary:hover { background: #475569; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <div class="title">System Health Diagnostics</div>
+      <div class="badge-up"><span class="dot"></span> STATUS: UP</div>
+    </div>
+
+    <div class="grid">
+      <div class="metric-box">
+        <div class="metric-label">Service Name</div>
+        <div class="metric-val">HelpDesk Hub API</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-label">Database Status</div>
+        <div class="metric-val" style="color: ${isConnected ? '#34d399' : '#f87171'}">
+          ${isConnected ? '● Connected (Ready)' : '○ Disconnected'}
+        </div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-label">Server Uptime</div>
+        <div class="metric-val font-mono">${uptimeStr}</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-label">Active Port</div>
+        <div class="metric-val font-mono">${env.PORT}</div>
+      </div>
+    </div>
+
+    <div style="background: #0f172a; padding: 12px 16px; border-radius: 8px; font-size: 11px; font-family: monospace; color: #64748b; margin-bottom: 20px;">
+      UTC Timestamp: ${timestamp}
+    </div>
+
+    <div class="btn-row">
+      <a href="/" class="btn-secondary">← Back to API Home</a>
+      <a href="${env.CLIENT_ORIGIN}" class="btn-primary">👉 Open Web App (Port 3000)</a>
+    </div>
+  </div>
+</body>
+</html>`);
+  }
+
+  // Pure JSON for API consumers and automated tests
   res.status(200).json({
     success: true,
     data: {
@@ -182,7 +329,7 @@ app.get('/api/v1/health', (req, res) => {
       version: '1.0.0',
       database: dbStatus,
       uptime: process.uptime(),
-      timestamp: new Date().toISOString()
+      timestamp
     }
   });
 });
