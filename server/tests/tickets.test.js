@@ -154,4 +154,14 @@ describe('Ticket Creation, SLA & Concurrency Suite', () => {
       expect(num).toMatch(new RegExp(`^HD-${currentYear}-\\d{4}$`));
     }
   });
+
+  it('Search Sanitization: Special regex metacharacters do not crash search or cause ReDoS', async () => {
+    const res = await request(app)
+      .get('/api/v1/tickets?search=.*((((([abc]')
+      .set('Cookie', [`token=${employeeToken}`]);
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(Array.isArray(res.body.data.tickets)).toBe(true);
+  });
 });

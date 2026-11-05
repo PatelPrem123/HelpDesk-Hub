@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import request from 'supertest';
+import fs from 'fs';
+import path from 'path';
 import app from '../src/server.js';
 import { Category } from '../src/models/Category.js';
 import { TICKET_PRIORITY } from '../src/config/constants.js';
@@ -138,5 +140,23 @@ describe('Comments, Privacy & File Attachment Hardening Suite', () => {
     expect(attachment.originalName).toBe('debug.txt');
     // Stored path must be UUID format with .txt extension
     expect(attachment.storagePath).toMatch(/^[0-9a-fA-F-]{36}\.txt$/);
+  });
+
+  it('File Upload Hardening: Failed upload to nonexistent ticket cleans up uploaded file', async () => {
+    const fakeTicketId = '666666666666666666666666';
+    const uploadsDir = path.resolve('uploads');
+    const filesBefore = fs.existsSync(uploadsDir) ? fs.readdirSync(uploadsDir) : [];
+
+    const res = await request(app)
+      .post(`/api/v1/tickets/${fakeTicketId}/comments/attachments`)
+      .set('Cookie', [`token=${employeeToken}`])
+      .attach('file', Buffer.from('Testing automatic cleanup on 404 failure'), 'test-cleanup.txt');
+
+    expect(res.status).toBe(404);
+    expect(res.body.success).toBe(false);
+
+    const filesAfter = fs.existsSync(uploadsDir) ? fs.readdirSync(uploadsDir) : [];
+    // Ensure no orphaned file remained
+    expect(filesAfter.length).toBe(filesBefore.length);
   });
 });

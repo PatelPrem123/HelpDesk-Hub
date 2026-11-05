@@ -91,6 +91,14 @@ export async function uploadAttachment(req, res, next) {
       }
     });
   } catch (error) {
+    // Ensure any uploaded file on disk is immediately cleaned up if processing fails
+    if (req.file?.path && fs.existsSync(req.file.path)) {
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (unlinkErr) {
+        // Silently ignore unlink error in catch handler
+      }
+    }
     next(error);
   }
 }

@@ -114,11 +114,12 @@ export async function getTickets(queryParams, user) {
   if (priority) filter.priority = priority;
   if (category) filter.category = category;
 
-  if (search) {
+  if (search && typeof search === 'string' && search.trim()) {
+    const escapedSearch = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     filter.$or = [
-      { ticketNumber: { $regex: search, $options: 'i' } },
-      { title: { $regex: search, $options: 'i' } },
-      { description: { $regex: search, $options: 'i' } }
+      { ticketNumber: { $regex: escapedSearch, $options: 'i' } },
+      { title: { $regex: escapedSearch, $options: 'i' } },
+      { description: { $regex: escapedSearch, $options: 'i' } }
     ];
   }
 
