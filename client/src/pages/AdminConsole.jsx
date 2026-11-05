@@ -60,9 +60,9 @@ export function AdminConsole() {
           api.get('/analytics/workload'),
           api.get('/analytics/audit-logs?limit=25')
         ]);
-        setMetrics(metricsRes.data.data);
-        setTechnicians(workloadRes.data.data.technicians);
-        setAuditLogs(auditRes.data.data.logs);
+        setMetrics(metricsRes.data?.data || {});
+        setTechnicians(workloadRes.data?.data?.technicians || []);
+        setAuditLogs(auditRes.data?.data?.logs || []);
       } catch (err) {
         showToast(err.message, 'error');
       } finally {
