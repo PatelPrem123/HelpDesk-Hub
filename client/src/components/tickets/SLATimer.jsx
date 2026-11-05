@@ -50,11 +50,11 @@ export function SLATimer({ deadline, isPaused, isBreached }) {
   }, [deadline, isPaused, isBreached]);
 
   const colorStyles = {
-    normal: 'text-emerald-400 bg-emerald-950/40 border-emerald-800/50',
-    warning: 'text-amber-400 bg-amber-950/40 border-amber-800/50 animate-pulse',
-    critical: 'text-rose-400 bg-rose-950/40 border-rose-800/50 animate-pulse font-bold',
-    breached: 'text-red-400 bg-red-950/60 border-red-700 font-bold',
-    paused: 'text-orange-300 bg-orange-950/40 border-orange-700/50'
+    normal: 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-800/60 font-semibold',
+    warning: 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/50 dark:text-amber-400 dark:border-amber-800/60 font-semibold animate-pulse',
+    critical: 'bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-950/60 dark:text-rose-400 dark:border-rose-800/70 font-bold animate-pulse',
+    breached: 'bg-red-100 text-red-800 border-red-300 dark:bg-red-950/70 dark:text-red-300 dark:border-red-700 font-bold',
+    paused: 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-700/60 font-semibold'
   };
 
   return (
