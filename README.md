@@ -262,17 +262,21 @@ Navigate your browser to `http://localhost:3000`.
 
 ## 10. Database Seeder & Test Personas
 
-When running `npm run seed` in `server/`, the following seed personas are ready for login:
+When running `npm run seed` in `server/`, the following seed personas are ready for login. For rapid testing, the web login view at `http://localhost:3000/login` includes **⚡ 1-Click Demo Account Quick Logins** that auto-fill credentials:
 
 | Persona | Email | Password | Role / Access Scope |
 | :--- | :--- | :--- | :--- |
-| **IT Director** | `admin@helpdeskhub.internal` | `AdminPass123!` | Full supervisory access, analytics, export, audit log. |
-| **Senior Tech** | `tech@helpdeskhub.internal` | `TechPass123!` | Operational Kanban queue, internal notes, status transitions. |
-| **Employee** | `employee@helpdeskhub.internal` | `EmployeePass123!` | Requester dashboard, new ticket submission, resolution review. |
+| **IT Director** (👑) | `admin@helpdeskhub.internal` | `AdminPass123!` | Full supervisory access, analytics, export, audit log. |
+| **Senior Tech** (🛠️) | `tech@helpdeskhub.internal` | `TechPass123!` | Operational Kanban queue, internal notes, status transitions. |
+| **Employee** (👤) | `employee@helpdeskhub.internal` | `EmployeePass123!` | Requester dashboard, new ticket submission, resolution review. |
 
 ---
 
 ## 11. REST API Documentation (/api/v1)
+
+### Gateway & System Diagnostics
+- `GET /` — API Gateway home. Serves interactive HTML status dashboard in browsers or JSON metadata for API clients.
+- `GET /api/v1/health` — Dual-mode health check. Renders rich status UI in web browsers (MongoDB state, uptime, port); returns `{ status: "UP", ... }` JSON for automated monitoring and tests.
 
 ### Authentication Endpoints
 - `POST /api/v1/auth/register` — Register new employee account.
@@ -313,11 +317,11 @@ cd server
 npm test
 ```
 
-### Verified Test Results (30 / 30 Passing)
+### Verified Test Results (32 / 32 Passing)
 - **`health.test.js`** (2 tests): Health check probe and 404 handler verification.
 - **`auth.test.js`** (8 tests): Registration, duplicate prevention, password complexity, login, cookie issuance, deactivated accounts, and RBAC rejection.
-- **`tickets.test.js`** (4 tests): Atomic sequence format (`HD-YYYY-XXXX`), BOLA/IDOR isolation, FSM transition guards, and 10-thread concurrency test.
-- **`commentsAndAttachments.test.js`** (5 tests): Public comments, internal notes, confidential note stripping for employees, executable (.exe) upload rejection, and UUID file renaming.
+- **`tickets.test.js`** (5 tests): Atomic sequence format (`HD-YYYY-XXXX`), BOLA/IDOR isolation, FSM transition guards, 10-thread concurrency test, and ReDoS regex escaping.
+- **`commentsAndAttachments.test.js`** (6 tests): Public comments, internal notes, confidential note stripping for employees, executable (.exe) upload rejection, UUID file renaming, and failed upload cleanup.
 - **`slaAndNotifications.test.js`** (5 tests): Weekend/business-hours projection math, clock pausing during `Pending User`, 60-second breach poller daemon, and notification read states.
 - **`analyticsAndExport.test.js`** (6 tests): MTTR KPI calculation, employee RBAC blocking, workload distribution, formula injection escaping, binary Excel workbook streaming, and immutable audit logs.
 
@@ -334,7 +338,7 @@ npm test
     ┌──────────┴──────────┐
     ▼                     ▼
 [ Express API ]     [ Socket.IO Hub ]
- (Port 5000)         (WebSockets)
+ (Port 5050)         (WebSockets)
     │                     │
     └──────────┬──────────┘
                ▼

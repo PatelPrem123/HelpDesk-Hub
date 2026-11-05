@@ -116,13 +116,15 @@ npm --prefix client run dev
 
 ## 3. User Personas & Authentication Credentials
 
-The system provides 3 pre-configured accounts:
+The system provides 3 pre-configured seed personas. To simplify testing, the Login screen at `http://localhost:3000/login` includes **⚡ 1-Click Demo Account Quick Logins** that automatically fill credentials:
 
 | Role | Email | Password | Primary Permissions |
 | :--- | :--- | :--- | :--- |
-| **Administrator** | `admin@helpdeskhub.internal` | `AdminPass123!` | System configuration, SLA targets, workload telemetry, audit logs, CSV/XLSX export |
-| **Technician** | `tech@helpdeskhub.internal` | `TechPass123!` | Kanban queue, claim/assign tickets, change lifecycle states, post confidential notes |
-| **Employee** | `employee@helpdeskhub.internal` | `EmployeePass123!` | Submit tickets, view own issues, public comments, confirm resolution or dispute |
+| **Administrator** (👑) | `admin@helpdeskhub.internal` | `AdminPass123!` | System configuration, SLA targets, workload telemetry, audit logs, CSV/XLSX export |
+| **Technician** (🛠️) | `tech@helpdeskhub.internal` | `TechPass123!` | Kanban queue, claim/assign tickets, change lifecycle states, post confidential notes |
+| **Employee** (👤) | `employee@helpdeskhub.internal` | `EmployeePass123!` | Submit tickets, view own issues, public comments, confirm resolution or dispute |
+
+> **Self-Registered Accounts:** Users registered via `/register` default to the `Employee` role. If an employee attempts to access restricted routes (such as `/admin`), the **RBAC Protected Route Access Guard** intercepts the request and displays an explanatory permission banner with an instant option to switch to an Administrator account.
 
 ---
 
@@ -248,6 +250,12 @@ The system defines 8 Mongoose models in `server/src/models/`:
 
 ## 8. REST API Specification (/api/v1)
 
+### Gateway & System Diagnostics
+- `GET /`: API Gateway entrypoint. Returns an interactive HTML service card in web browsers or JSON metadata (`service`, `version`, `clientAppUrl`) for API clients.
+- `GET /api/v1/health`: Dual-mode system health diagnostics.
+  - **Browser Mode (`Accept: text/html`):** Renders a responsive, dark-mode Health Dashboard displaying live MongoDB connection status, uptime counters, active listening port, and navigation links.
+  - **API Mode (`application/json`):** Returns standardized JSON `{ status: "UP", service: "HelpDesk Hub API", database: "connected", uptime: ... }` consumed by monitoring probes and test suites.
+
 ### Authentication (`/api/v1/auth`)
 - `POST /register`: Register employee account (`name`, `email`, `password`, `department`).
 - `POST /login`: Authenticate and issue secure `HttpOnly` JWT cookie.
@@ -276,7 +284,29 @@ The system defines 8 Mongoose models in `server/src/models/`:
 
 ---
 
-## 9. Real-Time WebSocket Architecture (Socket.IO)
+## 9. Frontend Architecture & Admin Console Navigation
+
+HelpDesk Hub's React 18 frontend is served on Port 3000 (`http://localhost:3000`) and features role-based routing, client-side route guards, and sub-view switching:
+
+| Route | View Component | Allowed Roles | Description |
+| :--- | :--- | :--- | :--- |
+| `/login` | `Login.jsx` | Public | Sign-in portal featuring 1-click test credential pills (Admin, Tech, Employee). |
+| `/register` | `Register.jsx` | Public | Account creation; automatically defaults to `Employee` role. |
+| `/` | `EmployeeDashboard.jsx` | All Authenticated | Requester portal: "My Support Tickets", status filters, ticket creation entry. |
+| `/tickets/new` | `NewTicket.jsx` | All Authenticated | Incident submission form with category selection, priority, and file uploads. |
+| `/tickets/:id` | `TicketDetail.jsx` | RBAC Scoped | Unified ticket timeline, live SLA countdown timer, and public/internal conversation stream. |
+| `/queue` | `TechQueue.jsx` | Technician, Admin | Interactive Kanban board with drag-free claim buttons and real-time state columns. |
+| `/admin` | `AdminConsole.jsx` | Administrator | Supervisory Overview: KPI metric cards and priority/status distribution charts. |
+| `/admin/analytics`| `AdminConsole.jsx` | Administrator | Workload Telemetry: Technician capacity heatmap and allocation balance. |
+| `/admin/audit` | `AdminConsole.jsx` | Administrator | Forensic Audit Ledger: Searchable append-only audit log with IP and timestamp trail. |
+| `/admin/export` | `AdminConsole.jsx` | Administrator | Data Exports Hub: Instant single-click CSV and formatted multi-sheet Excel exports. |
+
+### RBAC Protected Route Access Guard
+When an unprivileged user (e.g. `Employee`) attempts to navigate to restricted views (`/admin` or `/queue`), the `ProtectedRoute` component displays an actionable **Access Denied Banner** explaining the role mismatch and providing a one-click button to switch to an Administrator session.
+
+---
+
+## 10. Real-Time WebSocket Architecture (Socket.IO)
 
 Clients connect to the Socket.IO broker with JWT authentication. Sockets join restricted rooms:
 
@@ -298,7 +328,7 @@ Clients connect to the Socket.IO broker with JWT authentication. Sockets join re
 
 ---
 
-## 10. Security, Privacy & OWASP Hardening
+## 11. Security, Privacy & OWASP Hardening
 
 | Protection | Implementation Mechanism |
 | :--- | :--- |
@@ -312,7 +342,7 @@ Clients connect to the Socket.IO broker with JWT authentication. Sockets join re
 
 ---
 
-## 11. Role-Based User Workflows & Walkthrough
+## 12. Role-Based User Workflows & Walkthrough
 
 ```mermaid
 sequenceDiagram
@@ -340,26 +370,26 @@ sequenceDiagram
 
 ---
 
-## 12. Automated Testing & QA Verification
+## 13. Automated Testing & QA Verification
 
-HelpDesk Hub includes 30 automated integration and unit tests across 6 suites:
+HelpDesk Hub includes 32 automated integration and unit tests across 6 suites (100% passing via terminal execution):
 
 ```bash
-# Run test suite
+# Run automated test suite
 npm --prefix server test
 ```
 
-### Verified Test Suites:
-1. `health.test.js`: System health checks and perimeter 404 responses.
-2. `auth.test.js`: Registration, login, password complexity, deactivated users, RBAC cookies.
-3. `tickets.test.js`: Atomic sequence creation, BOLA/IDOR protection, FSM illegal transitions, concurrent sequence collisions.
-4. `commentsAndAttachments.test.js`: Public comments, confidential note protection, MIME file validation, UUID storage.
-5. `slaAndNotifications.test.js`: Business-hours algorithm, Friday-to-Monday forward projection, clock pausing, breach daemon, notification API.
-6. `analyticsAndExport.test.js`: KPI calculations, technician workload distribution, CSV formula injection sanitization, binary Excel (.xlsx) streaming, immutable audit trail.
+### Verified Test Suites (32/32 Passing):
+1. `health.test.js` (2 tests): System health checks and perimeter 404 responses.
+2. `auth.test.js` (8 tests): Registration, duplicate prevention, password complexity rules, valid login, incorrect credentials rejection, deactivated user gating, and session cookie validation.
+3. `tickets.test.js` (5 tests): Atomic sequence creation (`HD-YYYY-XXXX`), BOLA/IDOR protection, 9-state FSM illegal transition rejections, concurrent submission stress tests, and ReDoS regex query escaping.
+4. `commentsAndAttachments.test.js` (6 tests): Public comments, confidential note protection (`isInternal: true` scrubbing), MIME file validation, executable rejection (`.exe`), UUID storage renaming, and failed upload cleanup.
+5. `slaAndNotifications.test.js` (5 tests): Mathematical business hours algorithm, Friday-to-Monday forward projection, clock pausing on `Pending User`, SLA breach daemon poller, and unread notification alerts.
+6. `analyticsAndExport.test.js` (6 tests): KPI calculations, technician workload heatmap distribution, OWASP CSV formula injection sanitization, binary Excel (.xlsx) streaming, and immutable forensic audit trail.
 
 ---
 
-## 13. Production Deployment & Operational Runbook
+## 14. Production Deployment & Operational Runbook
 
 ### Environment Variables (`server/.env`)
 ```ini
